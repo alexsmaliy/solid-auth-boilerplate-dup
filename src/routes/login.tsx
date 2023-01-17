@@ -34,11 +34,13 @@ export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
 
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData) => {
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, { env, locals }) => {
     const loginType = form.get("loginType");
     const username = form.get("username");
     const password = form.get("password");
     const redirectTo = form.get("redirectTo") || "/";
+    console.log("ENV: " + JSON.stringify(env));
+    console.log("LOCALS: " + JSON.stringify(locals));
     if (
       typeof loginType !== "string" ||
       typeof username !== "string" ||
