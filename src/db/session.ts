@@ -1,5 +1,5 @@
 import { redirect } from "solid-start/server";
-import { createCookieSessionStorage, createSessionStorage } from "solid-start/session";
+import { createCookieSessionStorage } from "solid-start/session";
 import { db } from ".";
 type LoginForm = {
   username: string;
@@ -22,28 +22,18 @@ export async function login({ username, password }: LoginForm) {
 
 const sessionSecret = import.meta.env.SESSION_SECRET;
 
-// const storage = createCookieSessionStorage({
-//   cookie: {
-//     name: "RJ_session",
-//     // secure doesn't work on localhost for Safari
-//     // https://web.dev/when-to-use-local-https/
-//     secure: true,
-//     secrets: ["hello"],
-//     sameSite: "lax",
-//     path: "/",
-//     maxAge: 60 * 60 * 24 * 30,
-//     httpOnly: true,
-//   },
-// });
-
-const storage = createSessionStorage({
-  createData: (data, expires?) => {
-    console.log(JSON.stringify(data));
-    return Promise.resolve("1");
+const storage = createCookieSessionStorage({
+  cookie: {
+    name: "RJ_session",
+    // secure doesn't work on localhost for Safari
+    // https://web.dev/when-to-use-local-https/
+    secure: true,
+    secrets: ["hello"],
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+    httpOnly: true,
   },
-  readData: (id) => Promise.resolve(null),
-  updateData: (id, data) => Promise.resolve(),
-  deleteData: (id) => Promise.resolve(),
 });
 
 export function getUserSession(request: Request) {
