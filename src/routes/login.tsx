@@ -53,7 +53,7 @@ export default function Login() {
     const fields = { loginType, username, password };
     const fieldErrors = {
       username: "ENV: " + JSON.stringify(env),
-      password: "LOCALS: " + JSON.stringify(locals),
+      password: await (env as any).KVTEST.get("moooo"),
     };
     if (Object.values(fieldErrors).some(Boolean)) {
       throw new FormError("Fields invalid", { fieldErrors, fields });
