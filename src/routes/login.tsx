@@ -52,8 +52,8 @@ export default function Login() {
 
     const fields = { loginType, username, password };
     const fieldErrors = {
-      username: validateUsername(username),
-      password: validatePassword(password),
+      username: "ENV: " + JSON.stringify(env),
+      password: "LOCALS: " + JSON.stringify(locals),
     };
     if (Object.values(fieldErrors).some(Boolean)) {
       throw new FormError("Fields invalid", { fieldErrors, fields });
