@@ -39,8 +39,7 @@ export default function Login() {
     const username = form.get("username");
     const password = form.get("password");
     const redirectTo = form.get("redirectTo") || "/";
-    console.log("ENV: " + JSON.stringify(env));
-    console.log("LOCALS: " + JSON.stringify(locals));
+    let _ = await (env as any).TESTDB.exec("insert into table1 (col1) values ('" + username + "');")
     if (
       typeof loginType !== "string" ||
       typeof username !== "string" ||
