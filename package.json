@@ -18,8 +18,10 @@
     "vite": "^3.1.8"
   },
   "dependencies": {
+    "@cloudflare/d1": "^1.4.1",
     "@solidjs/meta": "^0.28.0",
     "@solidjs/router": "^0.6.0",
+    "bcrypt": "^5.1.0",
     "solid-js": "^1.6.2",
     "solid-start": "^0.2.0",
     "solid-start-cloudflare-pages": "^0.2.13",
