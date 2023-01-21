@@ -3,14 +3,14 @@ import { Database } from "@cloudflare/d1";
 import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
-import {
-  createServerAction$,
-  createServerData$,
-  redirect,
-  ServerFunctionEvent,
-} from "solid-start/server";
+import { createServerAction$, createServerData$, redirect, ServerFunctionEvent } from "solid-start/server";
 import { db } from "~/db";
 import { createUserSession, getUser, login, register } from "~/db/session";
+
+enum LoginType {
+  LOGIN = "login",
+  REGISTER = "register",
+}
 
 export function routeData() {
   return createServerData$(async (_, { request }) => {
@@ -28,10 +28,13 @@ async function serverAction(form: FormData, event: ServerFunctionEvent) {
   const d1 = new Database(d1_binding_from_env);
 
   // READ THE STATE OF THE FORM
-  const loginType = form.get("loginType");
-  const username = form.get("username");
-  const password = form.get("password");
-  const redirectTo = form.get("redirectTo") || "/";
+  const loginType = form.get("loginType") as string;
+  const username= form.get("username") as string;
+  const password = form.get("password") as string;
+  const redirectTo = (form.get("redirectTo") || "/") as string;
+
+  // HANDLE REGISTRATION/LOGIN/REDIRECTION
+  if (loginType === )
 
   switch (loginType) {
     case "login": {
@@ -76,23 +79,22 @@ export default function Login() {
     <main>
       <h1>Login</h1>
       <Form>
-        <input
-          type="hidden"
-          name="redirectTo"
-          value={params.redirectTo ?? "/"}
-        />
+        <input type="hidden" name="redirectTo" value={params.redirectTo ?? "/"} />
         <fieldset>
           <legend>Login or Register?</legend>
           <label>
-            <input type="radio" name="loginType" value="login" checked={true} />{" "}
+            <input type="radio" name="loginType" value={LoginType.LOGIN} checked={true} />
             Login
           </label>
           <label>
-            <input type="radio" name="loginType" value="register" /> Register
+            <input type="radio" name="loginType" value={LoginType.REGISTER} />
+            Register
           </label>
         </fieldset>
         <div>
-          <label for="username-input">Username</label>
+          <label for="username-input">
+            Username
+          </label>
           <input name="username" placeholder="kody" />
         </div>
         <Show when={loggingIn.error?.fieldErrors?.username}>
