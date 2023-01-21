@@ -22,29 +22,29 @@ export async function login({ username, password }: LoginForm) {
 
 const sessionSecret = import.meta.env.SESSION_SECRET;
 
-// const storage = createCookieSessionStorage({
-//   cookie: {
-//     name: "RJ_session",
-//     // secure doesn't work on localhost for Safari
-//     // https://web.dev/when-to-use-local-https/
-//     secure: true,
-//     secrets: ["hello"],
-//     sameSite: "lax",
-//     path: "/",
-//     maxAge: 60 * 60 * 24 * 30,
-//     httpOnly: true,
-//   },
-// });
-
-const storage = createSessionStorage({
-  createData: (data, expires?) => {
-    console.log(JSON.stringify(data));
-    return Promise.resolve("1");
+const storage = createCookieSessionStorage({
+  cookie: {
+    name: "RJ_session",
+    // secure doesn't work on localhost for Safari
+    // https://web.dev/when-to-use-local-https/
+    secure: true,
+    secrets: ["hello"],
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+    httpOnly: true,
   },
-  readData: (id) => Promise.resolve(null),
-  updateData: (id, data) => Promise.resolve(),
-  deleteData: (id) => Promise.resolve(),
 });
+
+// const storage = createSessionStorage({
+//   createData: (data, expires?) => {
+//     console.log(JSON.stringify(data));
+//     return Promise.resolve("1");
+//   },
+//   readData: (id) => Promise.resolve(null),
+//   updateData: (id, data) => Promise.resolve(),
+//   deleteData: (id) => Promise.resolve(),
+// });
 
 export function getUserSession(request: Request) {
   return storage.getSession(request.headers.get("Cookie"));
