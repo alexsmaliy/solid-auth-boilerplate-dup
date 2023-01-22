@@ -5,8 +5,8 @@ import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
 import { deleteSession, getUserBySessionId, User } from "~/database/operations";
 
 export function routeData() {
-  return createServerData$(async (_unused, { locals, request }) => {
-    const d1_binding_from_env = (locals as any).TESTDB;
+  return createServerData$(async (_unused, { env, request }) => {
+    const d1_binding_from_env = (env as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
   
     const cookieString = request.headers.get("Cookie") || "";
@@ -15,7 +15,9 @@ export function routeData() {
   
     let user: User | null = null;
     if (sessionCookie !== "") {
+      const _ = await d1.exec("insert into users (user_name, password_hash) values ('moo1', 'moo1');");
       const dbResponse = await getUserBySessionId(d1, sessionCookie);
+      console.log("dbResponse: ", dbResponse);
       if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
       user = dbResponse;
     }
@@ -31,8 +33,9 @@ export function routeData() {
 
 export default function Home() {
   const user = useRouteData<typeof routeData>();
-  const [, { Form }] = createServerAction$(async (f: FormData, { locals, request }) => {
-    const d1_binding_from_env = (locals as any).TESTDB;
+  const [, { Form }] = createServerAction$(async (f: FormData, { env, request }) => {
+    console.warn(JSON.stringify(env));
+    const d1_binding_from_env = (env as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
   
     const cookieString = request.headers.get("Cookie") || "";

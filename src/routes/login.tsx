@@ -32,7 +32,7 @@ async function handleLogin(db: Database, username: string, password: string, red
   return redirect(redirectTo, {
     headers: {
       // "Set-Cookie": serializeCookie(COOKIE_NAME, session.sessionId)
-      "Set-Cookie": serializeCookie(COOKIE_NAME, "dummy-value")
+      "Set-Cookie": serializeCookie(COOKIE_NAME, "dummy-value-2")
     }
   })
 }
@@ -65,8 +65,8 @@ async function handleRegister(db: Database, username: string, password: string, 
 }
 
 export function routeData() {
-  return createServerData$(async (_unused, { locals, request }) => {
-    const d1_binding_from_env = (locals as any).TESTDB;
+  return createServerData$(async (_unused, { env, request }) => {
+    const d1_binding_from_env = (env as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
   
     const cookieString = request.headers.get("Cookie") || "";
@@ -90,10 +90,12 @@ export function routeData() {
 export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, { locals }) => {
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, { env }) => {
     // INITIALIZE D1 DB BINDING
-    const d1_binding_from_env = (locals as any).TESTDB;
+    console.warn(JSON.stringify(env));
+    const d1_binding_from_env = (env as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
+    console.warn(JSON.stringify(d1));
   
     // READ THE STATE OF THE FORM
     const loginType = form.get("loginType") as string;
