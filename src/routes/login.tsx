@@ -37,13 +37,7 @@ FROM
   users
 WHERE
   user_name = ?;`).bind(username);
-  return stmt.raw().then(res => {
-      if (res.results !== undefined && (res.results[0][0] as any) === 1)
-          return true;
-      else if (res.results !== undefined)
-          return false;
-      return Error("Unknown DB error!");
-  }).catch(err => Error(err) /* do Cloudflare Functions do error logging? */);
+  return stmt.raw();
 }
 
 export default function Login() {
