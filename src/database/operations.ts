@@ -139,12 +139,12 @@ export async function getUserByUsername(db: Database, username: string) {
     const stmt = db.prepare(SQL_TEMPLATE_STRINGS.GET_USER).bind(username);
     return stmt.all().then(res => {
         if (res.results !== undefined && res.results.length === 0)
-            return Error("No such user!");
+            return "No such user!";
         else if (res.results !== undefined && validateUserDbRow(res.results[0]))
             return toUser(res.results[0]);
         else
-            return Error("Unknown DB error!");
-    }).catch(err => Error(err));
+            return "Unknown DB error!";
+    }).catch(err => String(err.message));
 }
 
 export async function setOrUpdateUserSession(db: Database, userId: number, sessionId: string) {

@@ -17,7 +17,7 @@ enum LoginType {
 async function handleLogin(db: Database, username: string, password: string, redirectTo: string) {
   // TRY TO LOOK UP USER BY USERNAME AND PASSWORD HASH
   const dbResponse = await getUserByUsername(db, username);
-  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  if (typeof dbResponse === "string") throw new FormError(dbResponse);
   const user = dbResponse;
   // const passwordMatches = true // await bcrypt.compare(password, user.passwordHash);
   // if (!passwordMatches) throw new FormError("Wrong password.");
@@ -138,7 +138,7 @@ export default function Login() {
         </div>
         <Show when={loggingIn.error}>
           <p role="alert" id="error-message">
-            {"Messages from login page: " + JSON.stringify(loggingIn.error)}
+            {"Messages from login page: " + JSON.stringify(loggingIn.error.message)}
           </p>
         </Show>
         <button type="submit">{data() ? "Login" : ""}</button>
