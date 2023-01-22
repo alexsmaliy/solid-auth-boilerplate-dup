@@ -15,7 +15,8 @@
     "rollup": "^3.10.0",
     "solid-start-node": "^0.2.15",
     "typescript": "^4.9.4",
-    "vite": "^3.2.5"
+    "vite": "^3.2.5",
+    "wrangler": "^2.8.0"
   },
   "dependencies": {
     "@cloudflare/d1": "^1.4.1",
