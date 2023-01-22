@@ -30,6 +30,22 @@ export function routeData() {
   });
 }
 
+export async function checkUserExists(db: any, username: string) {
+  const stmt = db.prepare(`SELECT
+  COUNT(*) > 0
+FROM
+  users
+WHERE
+  user_name = ?;`).bind(username);
+  return stmt.raw().then(res => {
+      if (res.results !== undefined && (res.results[0][0] as any) === 1)
+          return true;
+      else if (res.results !== undefined)
+          return false;
+      return Error("Unknown DB error!");
+  }).catch(err => Error(err) /* do Cloudflare Functions do error logging? */);
+}
+
 export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
@@ -60,11 +76,8 @@ export default function Login() {
     switch (loginType) {
       case "login": {
         const d1 = (env as any).TESTDB;
-        const stmt = d1.prepare("insert into sessions (user_id, session_id, created_at) values (?, ?, current_timestamp)").bind(
-          Date.now(), `${Date.now()}`
-        );
-        const _ = await stmt.all();
-
+        const x = await checkUserExists(d1, username);
+        if (x) throw new FormError(`User ${username} already exists!`);
         const user = await login({ username, password });
         if (!user) {
           throw new FormError(`Username/Password combination is incorrect`, {
