@@ -6,8 +6,8 @@ import { deleteSession, getUserBySessionId, User } from "~/database/operations";
 
 export function routeData() {
   return createServerData$(async (_unused, { env, request }) => {
-    // const d1_binding_from_env = (env as any).TESTDB;
-    // const d1 = new Database(d1_binding_from_env);
+    const d1_binding_from_env = (env as any).TESTDB;
+    const d1 = new Database(d1_binding_from_env);
   
     const cookieString = request.headers.get("Cookie") || "";
     const parsedCookies = parseCookie(cookieString);
