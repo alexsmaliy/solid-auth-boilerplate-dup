@@ -1,3 +1,4 @@
+import { Database } from "@cloudflare/d1";
 import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
@@ -34,7 +35,7 @@ export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
 
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData) => {
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, {env}) => {
     const loginType = form.get("loginType");
     const username = form.get("username");
     const password = form.get("password");
@@ -59,6 +60,10 @@ export default function Login() {
 
     switch (loginType) {
       case "login": {
+        const d1_binding_from_env = (env as any).TESTDB;
+        const d1 = new Database(d1_binding_from_env);
+        const _ = await d1.exec("insert into users (user_name, password_hash) values ('meow1', 'hash1');")
+
         const user = await login({ username, password });
         if (!user) {
           throw new FormError(`Username/Password combination is incorrect`, {
