@@ -16,9 +16,9 @@ enum LoginType {
 
 async function handleLogin(db: Database, username: string, password: string, redirectTo: string) {
   // TRY TO LOOK UP USER BY USERNAME AND PASSWORD HASH
-  const dbResponse = await getUserByUsername(db, username);
-  if (typeof dbResponse === "string") throw new FormError(dbResponse);
-  const user = dbResponse;
+  // const dbResponse = await getUserByUsername(db, username);
+  // if (typeof dbResponse === "string") throw new FormError(dbResponse);
+  // const user = dbResponse;
   // const passwordMatches = true // await bcrypt.compare(password, user.passwordHash);
   // if (!passwordMatches) throw new FormError("Wrong password.");
 
