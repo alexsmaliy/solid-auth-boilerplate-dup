@@ -135,9 +135,9 @@ export default function Login() {
           <label for="password-input">Password</label>
           <input name="password" type="password" placeholder="twixrox" />
         </div>
-        <Show when={true}>
+        <Show when={loggingIn.error}>
           <p role="alert" id="error-message">
-            {"Messages from login page: " + JSON.stringify(loggingIn.error)}
+            {"Messages from login page: " + JSON.stringify(loggingIn.error.message)}
           </p>
         </Show>
         <button type="submit">{data() ? "Login" : ""}</button>
