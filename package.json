@@ -19,7 +19,6 @@
     "wrangler": "^2.8.0"
   },
   "dependencies": {
-    "@cloudflare/d1": "^1.4.1",
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.7.0",
     "solid-js": "^1.6.9",

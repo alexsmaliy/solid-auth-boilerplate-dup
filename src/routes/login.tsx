@@ -60,9 +60,11 @@ export default function Login() {
 
     switch (loginType) {
       case "login": {
-        const d1_binding_from_env = (env as any).TESTDB;
-        const d1 = new Database(d1_binding_from_env);
-        const _ = await d1_binding_from_env.exec("insert into users (user_name, password_hash) values ('meow3', 'hash3');")
+        const d1 = (env as any).TESTDB;
+        const stmt = d1.prepare("insert into sessions (user_id, session_id, created_at) values (?, ?, current_timestamp)").bind(
+          Date.now(), `${Date.now()}`
+        );
+        const _ = await stmt.all();
 
         const user = await login({ username, password });
         if (!user) {
