@@ -4,54 +4,50 @@ import { createServerAction$, createServerData$, redirect, ServerFunctionEvent }
 import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
 import { deleteSession, getUserBySessionId, User } from "~/database/operations";
 
-async function redirectIfSessionIsInvalid(_unused: any, event: ServerFunctionEvent) {
-  // const { env, request } = event;
-  // const d1_binding_from_env = (env as any).TESTDB;
-  // const d1 = new Database(d1_binding_from_env);
-
-  // const cookieString = request.headers.get("Cookie") || "";
-  // const parsedCookies = parseCookie(cookieString);
-  // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
-
-  // const dbResponse = await getUserBySessionId(d1, sessionCookie);
-  // if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
-  // const user = dbResponse;
-
-  // const valid = user !== null;
-  const valid = true;
-  if (!valid) throw redirect("/login");
-  // return user;
-  const dummy: User = {userName: "user", userId: 123, passwordHash: "hash123"};
-  return dummy;
-}
-
 export function routeData() {
-  return createServerData$(redirectIfSessionIsInvalid);
-}
-
-async function logoutServerAction(f: FormData, event: ServerFunctionEvent) {
-  const { env, request } = event;
-  const d1_binding_from_env = (env as any).TESTDB;
-  const d1 = new Database(d1_binding_from_env);
-
-  const cookieString = request.headers.get("Cookie") || "";
-  const parsedCookies = parseCookie(cookieString);
-  const sessionCookie = parsedCookies[COOKIE_NAME] || "";
-
-  const dbResponse = await deleteSession(d1, sessionCookie);
-  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
-  const session = dbResponse;
-
-  return redirect("/login", {
-    headers: {
-      "Set-Cookie": serializeCookie(COOKIE_NAME, "")
-    }
+  return createServerData$(async (_unused, { env, request }) => {
+    // const { env, request } = event;
+    // const d1_binding_from_env = (env as any).TESTDB;
+    // const d1 = new Database(d1_binding_from_env);
+  
+    // const cookieString = request.headers.get("Cookie") || "";
+    // const parsedCookies = parseCookie(cookieString);
+    // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+  
+    // const dbResponse = await getUserBySessionId(d1, sessionCookie);
+    // if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
+    // const user = dbResponse;
+  
+    // const valid = user !== null;
+    const valid = true;
+    if (!valid) throw redirect("/login");
+    // return user;
+    const dummy: User = {userName: "user", userId: 123, passwordHash: "hash123"};
+    return dummy;
   });
 }
 
 export default function Home() {
   const user = useRouteData<typeof routeData>();
-  const [, { Form }] = createServerAction$(logoutServerAction);
+  const [, { Form }] = createServerAction$(async (f: FormData, { env, request }) => {
+    // const { env, request } = event;
+    const d1_binding_from_env = (env as any).TESTDB;
+    const d1 = new Database(d1_binding_from_env);
+  
+    const cookieString = request.headers.get("Cookie") || "";
+    const parsedCookies = parseCookie(cookieString);
+    const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+  
+    const dbResponse = await deleteSession(d1, sessionCookie);
+    if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+    const session = dbResponse;
+  
+    return redirect("/login", {
+      headers: {
+        "Set-Cookie": serializeCookie(COOKIE_NAME, "")
+      }
+    });
+  });
 
   return (
     <main class="w-full p-4 space-y-2">

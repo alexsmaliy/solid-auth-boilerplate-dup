@@ -63,54 +63,50 @@ async function handleRegister(db: Database, username: string, password: string, 
   })
 }
 
-async function loginFormServerAction(form: FormData, event: ServerFunctionEvent) {
-  // INITIALIZE D1 DB BINDING
-  const { env } = event;
-  const d1_binding_from_env = (env as any).TESTDB;
-  const d1 = new Database(d1_binding_from_env);
-
-  // READ THE STATE OF THE FORM
-  const loginType = form.get("loginType") as string;
-  const username= form.get("username") as string;
-  const password = form.get("password") as string;
-  const redirectTo = (form.get("redirectTo") || "/") as string;
-
-  // HANDLE REGISTRATION/LOGIN/REDIRECTION
-  if (loginType === LoginType.LOGIN)
-    return handleLogin(d1, username, password, redirectTo);
-  else if (loginType === LoginType.REGISTER)
-    return handleRegister(d1, username, password, redirectTo);
-  else
-    throw new FormError("Invalid choice of form submission: must be 'login' or 'register'!");
-};
-
-async function redirectIfSessionIsValid(_unused: any, event: ServerFunctionEvent) {
-  // const { env, request } = event;
-  // const d1_binding_from_env = (env as any).TESTDB;
-  // const d1 = new Database(d1_binding_from_env);
-
-  // const cookieString = request.headers.get("Cookie") || "";
-  // const parsedCookies = parseCookie(cookieString);
-  // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
-
-  // const dbResponse = await getUserBySessionId(d1, sessionCookie);
-  // if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
-  // const user = dbResponse;
-
-  // const valid = user !== null;
-  const valid = false;
-  if (valid) throw redirect("/");
-  return {}
-}
-
 export function routeData() {
-  return createServerData$(redirectIfSessionIsValid);
+  return createServerData$(async (_unused, { env, request }) => {
+    // const { env, request } = event;
+    // const d1_binding_from_env = (env as any).TESTDB;
+    // const d1 = new Database(d1_binding_from_env);
+  
+    // const cookieString = request.headers.get("Cookie") || "";
+    // const parsedCookies = parseCookie(cookieString);
+    // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+  
+    // const dbResponse = await getUserBySessionId(d1, sessionCookie);
+    // if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+    // const user = dbResponse;
+  
+    // const valid = user !== null;
+    const valid = false;
+    if (valid) throw redirect("/");
+    return {}
+  });
 }
 
 export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
-  const [loggingIn, { Form }] = createServerAction$(loginFormServerAction);
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, { env }) => {
+    // INITIALIZE D1 DB BINDING
+    // const { env } = event;
+    const d1_binding_from_env = (env as any).TESTDB;
+    const d1 = new Database(d1_binding_from_env);
+  
+    // READ THE STATE OF THE FORM
+    const loginType = form.get("loginType") as string;
+    const username= form.get("username") as string;
+    const password = form.get("password") as string;
+    const redirectTo = (form.get("redirectTo") || "/") as string;
+  
+    // HANDLE REGISTRATION/LOGIN/REDIRECTION
+    if (loginType === LoginType.LOGIN)
+      return handleLogin(d1, username, password, redirectTo);
+    else if (loginType === LoginType.REGISTER)
+      return handleRegister(d1, username, password, redirectTo);
+    else
+      throw new FormError("Invalid choice of form submission: must be 'login' or 'register'!");
+  });
 
   return (
     <main>
