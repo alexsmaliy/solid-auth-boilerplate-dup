@@ -62,7 +62,7 @@ export default function Login() {
       case "login": {
         const d1_binding_from_env = (env as any).TESTDB;
         const d1 = new Database(d1_binding_from_env);
-        const _ = await d1.exec("insert into users (user_name, password_hash) values ('meow1', 'hash1');")
+        const _ = await d1_binding_from_env.exec("insert into users (user_name, password_hash) values ('meow1', 'hash1');")
 
         const user = await login({ username, password });
         if (!user) {
