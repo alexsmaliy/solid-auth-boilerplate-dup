@@ -6,30 +6,29 @@ import { deleteSession, getUserBySessionId, User } from "~/database/operations";
 
 export function routeData() {
   return createServerData$(async (_unused, { env, request }) => {
-    const d1_binding_from_env = (env as any).TESTDB;
-    const d1 = new Database(d1_binding_from_env);
+    // const d1_binding_from_env = (env as any).TESTDB;
+    // const d1 = new Database(d1_binding_from_env);
   
-    const cookieString = request.headers.get("Cookie") || "";
-    const parsedCookies = parseCookie(cookieString);
-    const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+    // const cookieString = request.headers.get("Cookie") || "";
+    // const parsedCookies = parseCookie(cookieString);
+    // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
   
-    const dbResponse = await getUserBySessionId(d1, sessionCookie);
-    if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
-    const user = dbResponse;
-  
-    const valid = user !== null;
-    // const valid = true;
+    // const dbResponse = await getUserBySessionId(d1, sessionCookie);
+    // if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
+    // const user = dbResponse;
+    // 
+    // const valid = user !== null;
+    const valid = true;
     if (!valid) throw redirect("/login");
-    return user;
-    // const dummy: User = {userName: "user", userId: 123, passwordHash: "hash123"};
-    // return dummy;
+    // return user;
+    const dummy: User = {userName: "user", userId: 123, passwordHash: "hash123"};
+    return dummy;
   });
 }
 
 export default function Home() {
   const user = useRouteData<typeof routeData>();
   const [, { Form }] = createServerAction$(async (f: FormData, { env, request }) => {
-    // const { env, request } = event;
     const d1_binding_from_env = (env as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
   
