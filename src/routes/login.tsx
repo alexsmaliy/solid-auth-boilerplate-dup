@@ -64,8 +64,8 @@ async function handleRegister(db: Database, username: string, password: string, 
 }
 
 export function routeData() {
-  return createServerData$(async (_unused, { env, request }) => {
-    const d1_binding_from_env = (env as any).TESTDB;
+  return createServerData$(async (_unused, { locals, request }) => {
+    const d1_binding_from_env = (locals as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
   
     const cookieString = request.headers.get("Cookie") || "";
@@ -89,10 +89,9 @@ export function routeData() {
 export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, { env }) => {
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, { locals }) => {
     // INITIALIZE D1 DB BINDING
-    // const { env } = event;
-    const d1_binding_from_env = (env as any).TESTDB;
+    const d1_binding_from_env = (locals as any).TESTDB;
     const d1 = new Database(d1_binding_from_env);
   
     // READ THE STATE OF THE FORM
