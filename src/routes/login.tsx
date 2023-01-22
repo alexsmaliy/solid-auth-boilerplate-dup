@@ -5,7 +5,7 @@ import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
 import { createServerAction$, createServerData$, redirect, ServerFunctionEvent } from "solid-start/server";
 
-import { checkUserExists, createUser, getUserByPassword, getUserBySessionId, setOrUpdateUserSession } from "~/database/operations";
+import { checkUserExists, createUser, getUserByPassword, getUserBySessionId, setOrUpdateUserSession, User } from "~/database/operations";
 // import * as bcrypt from "bcrypt";
 import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
 
@@ -65,20 +65,22 @@ async function handleRegister(db: Database, username: string, password: string, 
 
 export function routeData() {
   return createServerData$(async (_unused, { env, request }) => {
-    // const { env, request } = event;
-    // const d1_binding_from_env = (env as any).TESTDB;
-    // const d1 = new Database(d1_binding_from_env);
+    const d1_binding_from_env = (env as any).TESTDB;
+    const d1 = new Database(d1_binding_from_env);
   
-    // const cookieString = request.headers.get("Cookie") || "";
-    // const parsedCookies = parseCookie(cookieString);
-    // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+    const cookieString = request.headers.get("Cookie") || "";
+    const parsedCookies = parseCookie(cookieString);
+    const sessionCookie = parsedCookies[COOKIE_NAME] || "";
   
-    // const dbResponse = await getUserBySessionId(d1, sessionCookie);
-    // if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
-    // const user = dbResponse;
+    let user: User | null = null;
+    if (sessionCookie !== "") {
+      const dbResponse = await getUserBySessionId(d1, sessionCookie);
+      if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+      user = dbResponse;
+    }
   
-    // const valid = user !== null;
-    const valid = false;
+    const valid = user !== null;
+    // const valid = false;
     if (valid) throw redirect("/");
     return {}
   });
