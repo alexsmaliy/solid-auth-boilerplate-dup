@@ -37,7 +37,13 @@ FROM
   users
 WHERE
   user_name = ?;`).bind(username);
-  return stmt.raw();
+  return stmt.raw().then(res => {
+      if (res.results !== undefined && (res.results[0][0] as any) === 1)
+          return true;
+      else if (res.results !== undefined)
+          return false;
+      return Error("Unknown DB error!");
+  }).catch(err => Error(err) /* do Cloudflare Functions do error logging? */);
 }
 
 export default function Login() {
@@ -71,7 +77,7 @@ export default function Login() {
       case "login": {
         const d1 = (env as any).TESTDB;
         const x = await checkUserExists(d1, username);
-        if (x) throw new FormError(`User ${username} already exists! x: ${JSON.stringify(x)}`);
+        throw new FormError(`User ${username} already exists! x: ${x.valueOf()}`);
         const user = await login({ username, password });
         if (!user) {
           throw new FormError(`Username/Password combination is incorrect`, {
