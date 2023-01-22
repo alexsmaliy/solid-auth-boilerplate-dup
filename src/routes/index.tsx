@@ -13,16 +13,19 @@ export function routeData() {
     const parsedCookies = parseCookie(cookieString);
     const sessionCookie = parsedCookies[COOKIE_NAME] || "";
   
-    // const dbResponse = await getUserBySessionId(d1, sessionCookie);
-    // if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
-    // const user = dbResponse;
-    // 
-    // const valid = user !== null;
-    const valid = true;
+    let user: User | null = null;
+    if (sessionCookie !== "") {
+      const dbResponse = await getUserBySessionId(d1, sessionCookie);
+      if (dbResponse instanceof Error) throw new FormError(dbResponse.message); // not the right error to throw?
+      user = dbResponse;
+    }
+    
+    const valid = user !== null;
+    // const valid = true;
     if (!valid) throw redirect("/login");
-    // return user;
-    const dummy: User = {userName: cookieString, userId: 123, passwordHash: "hash123"};
-    return dummy;
+    return user;
+    // const dummy: User = {userName: cookieString, userId: 123, passwordHash: "hash123"};
+    // return dummy;
   });
 }
 
