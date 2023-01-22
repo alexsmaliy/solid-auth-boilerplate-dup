@@ -1,4 +1,3 @@
-import { Database } from "@cloudflare/d1";
 import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
