@@ -42,6 +42,7 @@ WHERE
           return true;
       else if (res.results !== undefined)
           return false;
+      else return res.results;
       return Error("Unknown DB error!");
   }).catch(err => Error(err) /* do Cloudflare Functions do error logging? */);
 }

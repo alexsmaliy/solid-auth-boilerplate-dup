@@ -21,6 +21,7 @@
   "dependencies": {
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.7.0",
+    "bcryptjs": "^2.4.3",
     "solid-js": "^1.6.9",
     "solid-start": "^0.2.15",
     "solid-start-cloudflare-pages": "^0.2.16",
