@@ -135,7 +135,7 @@ export async function getUserBySessionId(db: Database, sessionId: string) {
     }).catch(err => Error(err));
 }
 
-export async function getUserByPassword(db: Database, username: string, password: string) {
+export async function getUserByUsername(db: Database, username: string) {
     const stmt = db.prepare(SQL_TEMPLATE_STRINGS.GET_USER).bind(username);
     return stmt.all().then(res => {
         if (res.results !== undefined && res.results.length === 0)
