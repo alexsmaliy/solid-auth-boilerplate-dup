@@ -23,7 +23,7 @@ async function handleLogin(db: Database, username: string, password: string, red
   if (!passwordMatches) throw new FormError("Wrong password.");
 
   // CREATE NEW SESSION FOR USER
-  const newSessionId = crypto.randomUUID();
+  const newSessionId =  "123uuid" // crypto.randomUUID();
   const dbResponse2 = await setOrUpdateUserSession(db, user.userId, newSessionId);
   if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
   const session = dbResponse2;
@@ -50,7 +50,7 @@ async function handleRegister(db: Database, username: string, password: string, 
   const newUser = dbResponse2;
 
   // CREATE NEW SESSION FOR CREATED USER
-  const newSessionId = crypto.randomUUID();
+  const newSessionId = "123uuid" // crypto.randomUUID();
   const dbResponse3 = await setOrUpdateUserSession(db, newUser.userId, newSessionId);
   if (dbResponse3 instanceof Error) throw new FormError(dbResponse3.message);
   const session = dbResponse3;
