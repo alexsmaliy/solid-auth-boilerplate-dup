@@ -77,7 +77,7 @@ export default function Login() {
       case "login": {
         const d1 = (env as any).TESTDB;
         const x = await checkUserExists(d1, username);
-        if (x) throw new FormError(`User ${username} already exists!`);
+        if (x) throw new FormError(`User ${username} already exists! x: ${JSON.stringify(x)}`);
         const user = await login({ username, password });
         if (!user) {
           throw new FormError(`Username/Password combination is incorrect`, {
