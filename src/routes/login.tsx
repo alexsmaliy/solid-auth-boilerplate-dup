@@ -136,7 +136,7 @@ export default function Login() {
         </div>
         <Show when={true}>
           <p role="alert" id="error-message">
-            {"MEssages from login page: " + JSON.stringify(loggingIn.error)}
+            {"Messages from login page: " + JSON.stringify(loggingIn.error)}
           </p>
         </Show>
         <button type="submit">{data() ? "Login" : ""}</button>
