@@ -4,24 +4,66 @@ import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
 import { createServerAction$, createServerData$, redirect, ServerFunctionEvent } from "solid-start/server";
-import { db } from "~/db";
-import { createUserSession, getUser, login, register } from "~/db/session";
+
+import { checkUserExists, createUser, getUserByPassword, getUserBySessionId, setOrUpdateUserSession } from "~/database/operations";
+import * as bcrypt from "bcrypt";
+import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
 
 enum LoginType {
   LOGIN = "login",
   REGISTER = "register",
 }
 
-export function routeData() {
-  return createServerData$(async (_, { request }) => {
-    if (await getUser(request)) {
-      throw redirect("/");
+async function handleLogin(db: Database, username: string, password: string, redirectTo: string) {
+  // TRY TO LOOK UP USER BY USERNAME AND PASSWORD HASH
+  const dbResponse = await getUserByPassword(db, username, password);
+  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  const user = dbResponse;
+  const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+  if (!passwordMatches) throw new FormError("Wrong password.");
+
+  // CREATE NEW SESSION FOR USER
+  const newSessionId = crypto.randomUUID();
+  const dbResponse2 = await setOrUpdateUserSession(db, user.userId, newSessionId);
+  if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
+  const session = dbResponse2;
+
+  // REDIRECT TO HOMEPAGE AND SET SESSION COOKIE
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": serializeCookie(COOKIE_NAME, session.sessionId)
     }
-    return {};
-  });
+  })
 }
 
-async function serverAction(form: FormData, event: ServerFunctionEvent) {
+async function handleRegister(db: Database, username: string, password: string, redirectTo: string) {
+  // CHECK IF USERNAME ALREADY EXISTS
+  const dbResponse = await checkUserExists(db, username);
+  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  const userExists = dbResponse;
+  if (userExists) throw new FormError("Username already taken!");
+
+  // HASH PASSWORD AND CREATE NEW USER
+  const hash = await bcrypt.genSalt(12).then(salt => bcrypt.hash(salt, password));
+  const dbResponse2 = await createUser(db, username, hash);
+  if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
+  const newUser = dbResponse2;
+
+  // CREATE NEW SESSION FOR CREATED USER
+  const newSessionId = crypto.randomUUID();
+  const dbResponse3 = await setOrUpdateUserSession(db, newUser.userId, newSessionId);
+  if (dbResponse3 instanceof Error) throw new FormError(dbResponse3.message);
+  const session = dbResponse3;
+
+  // REDIRECT TO HOMEPAGE AND SET SESSION COOKIE
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": serializeCookie(COOKIE_NAME, session.sessionId)
+    }
+  })
+}
+
+async function loginFormServerAction(form: FormData, event: ServerFunctionEvent) {
   // INITIALIZE D1 DB BINDING
   const { env } = event;
   const d1_binding_from_env = (env as any).TESTDB;
@@ -34,46 +76,40 @@ async function serverAction(form: FormData, event: ServerFunctionEvent) {
   const redirectTo = (form.get("redirectTo") || "/") as string;
 
   // HANDLE REGISTRATION/LOGIN/REDIRECTION
-  if (loginType === )
-
-  switch (loginType) {
-    case "login": {
-      const user = await login({ username, password });
-      if (!user) {
-        throw new FormError(`Username/Password combination is incorrect`, {
-          fields,
-        });
-      }
-      return createUserSession(`${user.id}`, redirectTo);
-    }
-    case "register": {
-      const userExists = await db.user.findUnique({ where: { username } });
-      if (userExists) {
-        throw new FormError(`User with username ${username} already exists`, {
-          fields,
-        });
-      }
-      const user = await register({ username, password });
-      if (!user) {
-        throw new FormError(
-          `Something went wrong trying to create a new user.`,
-          {
-            fields,
-          }
-        );
-      }
-      return createUserSession(`${user.id}`, redirectTo);
-    }
-    default: {
-      throw new FormError(`Login type invalid`, { fields });
-    }
-  }
+  if (loginType === LoginType.LOGIN)
+    return handleLogin(d1, username, password, redirectTo);
+  else if (loginType === LoginType.REGISTER)
+    return handleRegister(d1, username, password, redirectTo);
+  else
+    throw new FormError("Invalid choice of form submission: must be 'login' or 'register'!");
 };
+
+async function redirectIfSessionIsValid(_unused: any, event: ServerFunctionEvent) {
+  const { env, request } = event;
+  const d1_binding_from_env = (env as any).TESTDB;
+  const d1 = new Database(d1_binding_from_env);
+
+  const cookieString = request.headers.get("Cookie") || "";
+  const parsedCookies = parseCookie(cookieString);
+  const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+
+  const dbResponse = await getUserBySessionId(d1, sessionCookie);
+  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  const user = dbResponse;
+
+  const valid = user !== null;
+  if (valid) throw redirect("/");
+  return {}
+}
+
+export function routeData() {
+  return createServerData$(redirectIfSessionIsValid);
+}
 
 export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
-  const [loggingIn, { Form }] = createServerAction$(serverAction);
+  const [loggingIn, { Form }] = createServerAction$(loginFormServerAction);
 
   return (
     <main>
@@ -97,19 +133,13 @@ export default function Login() {
           </label>
           <input name="username" placeholder="kody" />
         </div>
-        <Show when={loggingIn.error?.fieldErrors?.username}>
-          <p role="alert">{loggingIn.error.fieldErrors.username}</p>
-        </Show>
         <div>
           <label for="password-input">Password</label>
           <input name="password" type="password" placeholder="twixrox" />
         </div>
-        <Show when={loggingIn.error?.fieldErrors?.password}>
-          <p role="alert">{loggingIn.error.fieldErrors.password}</p>
-        </Show>
-        <Show when={loggingIn.error}>
+        <Show when={true}>
           <p role="alert" id="error-message">
-            {loggingIn.error.message}
+            {"MEssages from login page: " + JSON.stringify(loggingIn.error)}
           </p>
         </Show>
         <button type="submit">{data() ? "Login" : ""}</button>
