@@ -32,7 +32,7 @@ export function routeData() {
 
 export async function checkUserExists(db: any, username: string) {
   const stmt = db.prepare(`SELECT COUNT(*) > 0 AS col1 FROM users WHERE user_name = ?1;`).bind(username);
-  return stmt.raw().catch(err => Error(err) /* do Cloudflare Functions do error logging? */);
+  return stmt.all().catch(err => Error(err) /* do Cloudflare Functions do error logging? */);
 }
 
 export default function Login() {
