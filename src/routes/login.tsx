@@ -85,19 +85,20 @@ async function loginFormServerAction(form: FormData, event: ServerFunctionEvent)
 };
 
 async function redirectIfSessionIsValid(_unused: any, event: ServerFunctionEvent) {
-  const { env, request } = event;
-  const d1_binding_from_env = (env as any).TESTDB;
-  const d1 = new Database(d1_binding_from_env);
+  // const { env, request } = event;
+  // const d1_binding_from_env = (env as any).TESTDB;
+  // const d1 = new Database(d1_binding_from_env);
 
-  const cookieString = request.headers.get("Cookie") || "";
-  const parsedCookies = parseCookie(cookieString);
-  const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+  // const cookieString = request.headers.get("Cookie") || "";
+  // const parsedCookies = parseCookie(cookieString);
+  // const sessionCookie = parsedCookies[COOKIE_NAME] || "";
 
-  const dbResponse = await getUserBySessionId(d1, sessionCookie);
-  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
-  const user = dbResponse;
+  // const dbResponse = await getUserBySessionId(d1, sessionCookie);
+  // if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  // const user = dbResponse;
 
-  const valid = user !== null;
+  // const valid = user !== null;
+  const valid = false;
   if (valid) throw redirect("/");
   return {}
 }
