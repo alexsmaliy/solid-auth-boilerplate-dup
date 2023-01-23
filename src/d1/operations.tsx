@@ -8,7 +8,7 @@ const SQL_TEMPLATE_STRINGS = {
             user_name = ?;`,
     GET_USER_BY_USERNAME:
         `SELECT
-            user_id, user_name, password_hash, password_salt
+            user_id, user_name, password_hash
         FROM
             users
         WHERE
