@@ -61,7 +61,7 @@ export default function Login() {
       case "login": {
         const user = await login({ username, password });
         if (!user) {
-          throw new FormError(`Username/Password combination is incorrect`, {
+          throw new FormError(`Username/Password combination is incorrect ${crypto.randomUUID()}`, {
             fields,
           });
         }
