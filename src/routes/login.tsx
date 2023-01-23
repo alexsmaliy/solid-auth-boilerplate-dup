@@ -6,6 +6,7 @@ import {
   createServerData$,
   redirect,
 } from "solid-start/server";
+import { getUserByUsername } from "~/d1/operations";
 import { db } from "~/db";
 import { createUserSession, getUser, login, register } from "~/db/session";
 
@@ -39,11 +40,17 @@ export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
 
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData) => {
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, {env}) => {
     const loginType = form.get("loginType");
-    const username = form.get("username");
+    const username = form.get("username") as string;
     const password = form.get("password");
     const redirectTo = form.get("redirectTo") || "/";
+    
+    const d1 = (env as any).TESTDB;
+    const d1Response = await getUserByUsername(d1, username);
+    if (d1Response instanceof Error) throw new FormError(d1Response.message);
+    const d1User = d1Response;
+    
     if (
       typeof loginType !== "string" ||
       typeof username !== "string" ||
@@ -66,7 +73,7 @@ export default function Login() {
       case "login": {
         const user = await login({ username, password });
         if (!user) {
-          throw new FormError(`Username/Password combination is incorrect ${crypto.randomUUID()}`, {
+          throw new FormError(`Username/Password combination is incorrect\nDB: ${d1User}`, {
             fields,
           });
         }
@@ -124,7 +131,7 @@ export default function Login() {
         </div>
         <Show when={loggingIn.error}>
           <p role="alert" id="error-message">
-            {`Random UUID: ${crypto.randomUUID()}\nErrors: ` + JSON.stringify(loggingIn.error.message)}
+            {`Errors: ` + JSON.stringify(loggingIn.error.message)}
           </p>
         </Show>
         <button type="submit">{data() ? "Login" : ""}</button>
