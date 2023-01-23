@@ -73,7 +73,7 @@ export default function Login() {
       case "login": {
         const user = await login({ username, password });
         if (!user) {
-          throw new FormError(`Username/Password combination is incorrect\nDB: ${d1User}`, {
+          throw new FormError(`Username/Password combination is incorrect\nDB: ${JSON.stringify(d1User)}`, {
             fields,
           });
         }
