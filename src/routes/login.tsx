@@ -5,6 +5,7 @@ import {
   createServerAction$,
   createServerData$,
   redirect,
+  ServerFunctionEvent,
 } from "solid-start/server";
 import { getUserByUsername } from "~/d1/operations";
 import { db } from "~/db";
@@ -40,13 +41,13 @@ export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
 
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, {env}) => {
+  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, e: ServerFunctionEvent) => {
     const loginType = form.get("loginType");
     const username = form.get("username") as string;
     const password = form.get("password");
     const redirectTo = form.get("redirectTo") || "/";
     
-    const d1 = (env as any).TESTDB;
+    const d1 = (e.env as any).TESTDB;
     const d1Response = await getUserByUsername(d1, username);
     if (d1Response instanceof Error) throw new FormError(d1Response.message);
     const d1User = d1Response;

@@ -21,7 +21,7 @@ type UserDbRow = {
     user_id: number,
     user_name: string,
     password_hash: string,
-}
+};
 
 export type User = {
     userId: number,
