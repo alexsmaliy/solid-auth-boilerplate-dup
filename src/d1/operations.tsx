@@ -19,7 +19,7 @@ export async function getUserByUsername(db: any, username: string) {
     const stmt = db.prepare(SQL_TEMPLATE_STRINGS.GET_USER_BY_USERNAME).bind(username);
     return stmt.all().then(res => {
         if (res.results !== undefined && res.results.length === 0)
-            return Error("No such user!");
+            return Error("No such user!\n" + JSON.stringify({res, stmt}));
         else if (res.results !== undefined)
             return res.results[0];
         else
