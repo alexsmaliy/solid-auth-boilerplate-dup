@@ -23,6 +23,6 @@ export async function getUserByUsername(db: any, username: string) {
         else if (res.results !== undefined)
             return res.results[0];
         else
-            return Error("Unknown DB error!");
+            return JSON.stringify(res);
     }).catch(err => Error(err.message));
 }
