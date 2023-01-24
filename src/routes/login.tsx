@@ -2,16 +2,9 @@ import { D1Database } from "@cloudflare/workers-types";
 import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
-import {
-  createServerAction$,
-  createServerData$,
-  redirect,
-  ServerFunctionEvent,
-} from "solid-start/server";
+import { createServerAction$, createServerData$, redirect, ServerFunctionEvent } from "solid-start/server";
 import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
 import { checkUserExists, createUser, getUserBySessionId, getUserByUsername, setOrUpdateUserSession, User } from "~/d1/operations";
-import { db } from "~/db";
-import { createUserSession, getUser, login, register } from "~/db/session";
 
 enum LoginType {
   LOGIN = "login",
