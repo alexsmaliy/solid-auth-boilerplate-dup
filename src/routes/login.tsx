@@ -53,7 +53,7 @@ async function handleLogin(db: D1Database, username: string, password: string, r
   const dbResponse = await getUserByUsername(db, username);
   if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
   const user = dbResponse;
-  const passwordMatches = true // await bcrypt.compare(password, user.passwordHash);
+  const passwordMatches = password === user.passwordHash // await bcrypt.compare(password, user.passwordHash);
   if (!passwordMatches) throw new FormError("Wrong password.");
 
   // CREATE NEW SESSION FOR USER
