@@ -32,10 +32,6 @@ async function loginFormServerData(_unused: unknown, {env, request}: ServerFunct
     return {}
 }
 
-export function routeData() {
-  return createServerData$(loginFormServerData);
-}
-
 async function loginFormServerAction(form: FormData, { env }: ServerFunctionEvent) {
   const loginType = form.get("loginType") as string;
   const username = form.get("username") as string;
@@ -98,6 +94,10 @@ async function handleRegister(db: D1Database, username: string, password: string
       "Set-Cookie": serializeCookie(COOKIE_NAME, session.sessionId)
     }
   });
+}
+
+export function routeData() {
+  return createServerData$(loginFormServerData);
 }
 
 export default function Login() {

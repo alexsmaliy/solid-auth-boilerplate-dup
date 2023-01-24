@@ -14,6 +14,12 @@ const SQL_TEMPLATE_STRINGS = {
             users (user_name, password_hash)
         VALUES (?, ?)
         RETURNING *;`,
+    DELETE_SESSION:
+        `DELETE FROM
+            sessions
+        WHERE
+            session_id = ?
+        RETURNING user_id, session_id, UNIXEPOCH(created_at) AS created_at;`,
     GET_USER_BY_USERNAME:
         `SELECT
             user_id, user_name, password_hash
@@ -97,6 +103,18 @@ export async function createUser(db: D1Database, username: string, passwordHash:
         else
             return Error(`Some other problem: ${JSON.stringify(res)}`);
     }).catch(err => Error(err));
+}
+
+export async function deleteSession(db: D1Database, sessionId: string) {
+    const stmt = db.prepare(SQL_TEMPLATE_STRINGS.DELETE_SESSION).bind(sessionId);
+    return stmt.all<SessionDbRow>().then(res => {
+        if (res.results !== undefined && res.results.length === 1)
+            return toSession(res.results[0]);
+        else if (res.results !== undefined && res.results.length === 0)
+            return null;
+        else
+            return Error(`Some other problem: ${JSON.stringify(res)}`);
+    });
 }
 
 export async function getUserBySessionId(db: D1Database, sessionId: string) {
