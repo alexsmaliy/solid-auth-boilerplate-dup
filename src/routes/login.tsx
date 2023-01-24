@@ -30,7 +30,6 @@ async function loginFormServerData(_unused: unknown, {env, request}: ServerFunct
     const dbResponse = await getUserBySessionId(d1, sessionCookie);
     if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
     user = dbResponse;
-    throw new FormError(`Session: ${sessionCookie}\nUser: ${JSON.stringify(user)}`);
   }
 
   const valid = user !== null;
