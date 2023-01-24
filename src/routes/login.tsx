@@ -8,35 +8,40 @@ import {
   redirect,
   ServerFunctionEvent,
 } from "solid-start/server";
-import { COOKIE_NAME, serializeCookie } from "~/auth/cookies";
-import { checkUserExists, createUser, getUserByUsername, setOrUpdateUserSession } from "~/d1/operations";
+import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
+import { checkUserExists, createUser, getUserBySessionId, getUserByUsername, setOrUpdateUserSession, User } from "~/d1/operations";
 import { db } from "~/db";
 import { createUserSession, getUser, login, register } from "~/db/session";
-
-function validateUsername(username: unknown) {
-  if (typeof username !== "string" || username.length < 3) {
-    return `Usernames must be at least 3 characters long`;
-  }
-}
-
-function validatePassword(password: unknown) {
-  if (typeof password !== "string" || password.length < 6) {
-    return `Passwords must be at least 6 characters long`;
-  }
-}
-
-export function routeData() {
-  return createServerData$(async (_, { request }) => {
-    if (await getUser(request)) {
-      throw redirect("/");
-    }
-    return {};
-  });
-}
 
 enum LoginType {
   LOGIN = "login",
   REGISTER = "register",
+}
+
+async function loginFormServerData(_unused: unknown, {env, request}: ServerFunctionEvent) {
+  const d1: D1Database = (env as any).TESTDB;
+
+  const cookieString = request.headers.get("Cookie") || "";
+  const parsedCookies = parseCookie(cookieString);
+  const sessionCookie = parsedCookies[COOKIE_NAME] || "";
+
+  let user: User | null = null;
+  if (sessionCookie !== "") {
+    const dbResponse = await getUserBySessionId(d1, sessionCookie);
+    if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+    user = dbResponse;
+    throw new FormError(`Session: ${sessionCookie}\nUser: ${JSON.stringify(user)}`);
+  }
+
+  const valid = user !== null;
+  if (valid)
+    throw redirect("/");
+  else
+    return {}
+}
+
+export function routeData() {
+  return createServerData$(loginFormServerData);
 }
 
 async function loginFormServerAction(form: FormData, { env }: ServerFunctionEvent) {

@@ -1,4 +1,5 @@
 import { D1Database } from "@cloudflare/workers-types";
+import { COOKIE_MAX_AGE_SECONDS } from "~/auth/cookies";
 
 const SQL_TEMPLATE_STRINGS = {
     CHECK_USER_EXISTS:
@@ -20,6 +21,21 @@ const SQL_TEMPLATE_STRINGS = {
             users
         WHERE
             user_name = ?;`,
+    GET_USER_IF_SESSION_IS_VALID:
+        `WITH subquery1 AS (
+            SELECT
+                user_id
+            FROM
+                sessions
+            WHERE
+                session_id = ?
+                AND
+                CURRENT_TIMESTAMP < DATETIME(created_at, '+${COOKIE_MAX_AGE_SECONDS} seconds')
+        )
+        SELECT
+            users.user_id, user_name, password_hash
+        FROM
+            subquery1 JOIN users ON subquery1.user_id = users.user_id;`,
     SET_OR_UPDATE_USER_SESSION:
         `INSERT INTO
             sessions (user_id, session_id)
@@ -77,6 +93,18 @@ export async function createUser(db: D1Database, username: string, passwordHash:
     const stmt = db.prepare(SQL_TEMPLATE_STRINGS.CREATE_USER).bind(username, passwordHash);
     return stmt.all<UserDbRow>().then(res => {
         if (res.results !== undefined && res.results.length === 1)
+            return toUser(res.results[0]);
+        else
+            return Error(`Some other problem: ${JSON.stringify(res)}`);
+    }).catch(err => Error(err));
+}
+
+export async function getUserBySessionId(db: D1Database, sessionId: string) {
+    const stmt = db.prepare(SQL_TEMPLATE_STRINGS.GET_USER_IF_SESSION_IS_VALID).bind(sessionId);
+    return stmt.all<UserDbRow>().then(res => {
+        if (res.results !== undefined && res.results.length === 0)
+            return null;
+        else if (res.results !== undefined)
             return toUser(res.results[0]);
         else
             return Error(`Some other problem: ${JSON.stringify(res)}`);

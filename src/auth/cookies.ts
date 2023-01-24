@@ -1,7 +1,7 @@
 import * as cookie from "cookie";
 
 export const COOKIE_NAME = "__session";
-export const COOKIE_MAX_AGE_SECONDS = 5 * 60;
+export const COOKIE_MAX_AGE_SECONDS = 30 * 60;
 
 const COOKIE_SERIALIZE_OPTIONS: cookie.CookieSerializeOptions = {
     encode: encodeURIComponent,
