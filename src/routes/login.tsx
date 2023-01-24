@@ -1,4 +1,5 @@
 import { D1Database } from "@cloudflare/workers-types";
+import * as bcrypt from "bcryptjs";
 import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
@@ -53,7 +54,7 @@ async function handleLogin(db: D1Database, username: string, password: string, r
   const dbResponse = await getUserByUsername(db, username);
   if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
   const user = dbResponse;
-  const passwordMatches = password === user.passwordHash // await bcrypt.compare(password, user.passwordHash);
+  const passwordMatches = bcrypt.compareSync(password, user.passwordHash);
   if (!passwordMatches) throw new FormError("Wrong password.");
 
   // CREATE NEW SESSION FOR USER
@@ -77,7 +78,8 @@ async function handleRegister(db: D1Database, username: string, password: string
   if (userExists) throw new FormError("Username already taken!");
 
   // HASH PASSWORD AND CREATE NEW USER
-  const hash = password // await bcrypt.genSalt(12).then(salt => bcrypt.hash(salt, password));
+  const salt = bcrypt.genSaltSync(8);
+  const hash = bcrypt.hashSync(password, salt);
   const dbResponse2 = await createUser(db, username, hash);
   if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
   const newUser = dbResponse2;
