@@ -127,11 +127,11 @@ export default function Login() {
           <label for="username-input">
             Username
           </label>
-          <input name="username" placeholder="kody" />
+          <input name="username" placeholder="username" />
         </div>
         <div>
           <label for="password-input">Password</label>
-          <input name="password" type="password" placeholder="twixrox" />
+          <input name="password" type="password" placeholder="password" />
         </div>
         <Show when={loggingIn.error}>
           <p role="alert" id="error-message">
