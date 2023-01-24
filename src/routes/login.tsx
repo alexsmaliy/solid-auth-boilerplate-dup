@@ -1,3 +1,4 @@
+import { D1Database } from "@cloudflare/workers-types";
 import { Show } from "solid-js";
 import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
@@ -7,7 +8,8 @@ import {
   redirect,
   ServerFunctionEvent,
 } from "solid-start/server";
-import { getUserByUsername } from "~/d1/operations";
+import { COOKIE_NAME, serializeCookie } from "~/auth/cookies";
+import { checkUserExists, createUser, getUserByUsername, setOrUpdateUserSession } from "~/d1/operations";
 import { db } from "~/db";
 import { createUserSession, getUser, login, register } from "~/db/session";
 
@@ -37,72 +39,74 @@ enum LoginType {
   REGISTER = "register",
 }
 
+async function loginFormServerAction(form: FormData, { env }: ServerFunctionEvent) {
+  const loginType = form.get("loginType") as string;
+  const username = form.get("username") as string;
+  const password = form.get("password") as string;
+  const redirectTo = (form.get("redirectTo") || "/") as string;
+
+  const d1: D1Database = (env as any).TESTDB;
+
+  if (loginType === LoginType.LOGIN)
+    return handleLogin(d1, username, password, redirectTo);
+  else if (loginType === LoginType.REGISTER)
+    return handleRegister(d1, username, password, redirectTo);
+  else
+    throw new FormError("Invalid choice of form submission: must be 'login' or 'register'!");
+}
+
+async function handleLogin(db: D1Database, username: string, password: string, redirectTo: string) {
+  // TRY TO LOOK UP USER BY USERNAME AND PASSWORD HASH
+  const dbResponse = await getUserByUsername(db, username);
+  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  const user = dbResponse;
+  const passwordMatches = true // await bcrypt.compare(password, user.passwordHash);
+  if (!passwordMatches) throw new FormError("Wrong password.");
+
+  // CREATE NEW SESSION FOR USER
+  const newSessionId =  crypto.randomUUID();
+  const dbResponse2 = await setOrUpdateUserSession(db, user.userId, newSessionId);
+  if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
+
+  // REDIRECT TO HOMEPAGE AND SET SESSION COOKIE
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": serializeCookie(COOKIE_NAME, newSessionId)
+    }
+  });
+}
+
+async function handleRegister(db: D1Database, username: string, password: string, redirectTo: string) {
+  // CHECK IF USERNAME ALREADY EXISTS
+  const dbResponse = await checkUserExists(db, username);
+  if (dbResponse instanceof Error) throw new FormError(dbResponse.message);
+  const userExists = dbResponse;
+  if (userExists) throw new FormError("Username already taken!");
+
+  // HASH PASSWORD AND CREATE NEW USER
+  const hash = password // await bcrypt.genSalt(12).then(salt => bcrypt.hash(salt, password));
+  const dbResponse2 = await createUser(db, username, hash);
+  if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
+  const newUser = dbResponse2;
+
+  // CREATE NEW SESSION FOR CREATED USER
+  const newSessionId = crypto.randomUUID();
+  const dbResponse3 = await setOrUpdateUserSession(db, newUser.userId, newSessionId);
+  if (dbResponse3 instanceof Error) throw new FormError(dbResponse3.message);
+  const session = dbResponse3;
+
+  // REDIRECT TO HOMEPAGE AND SET SESSION COOKIE
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": serializeCookie(COOKIE_NAME, session.sessionId)
+    }
+  });
+}
+
 export default function Login() {
   const data = useRouteData<typeof routeData>();
   const params = useParams();
-
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, e: ServerFunctionEvent) => {
-    const loginType = form.get("loginType");
-    const username = form.get("username") as string;
-    const password = form.get("password");
-    const redirectTo = form.get("redirectTo") || "/";
-    
-    const d1 = (e.env as any).TESTDB;
-    const d1Response = await getUserByUsername(d1, username);
-    if (d1Response instanceof Error) throw new FormError(d1Response.message);
-    const d1User = d1Response;
-    
-    if (
-      typeof loginType !== "string" ||
-      typeof username !== "string" ||
-      typeof password !== "string" ||
-      typeof redirectTo !== "string"
-    ) {
-      throw new FormError(`Form not submitted correctly.`);
-    }
-
-    const fields = { loginType, username, password };
-    const fieldErrors = {
-      username: validateUsername(username),
-      password: validatePassword(password),
-    };
-    if (Object.values(fieldErrors).some(Boolean)) {
-      throw new FormError("Fields invalid", { fieldErrors, fields });
-    }
-
-    switch (loginType) {
-      case "login": {
-        const user = await login({ username, password });
-        if (!user) {
-          throw new FormError(`Username/Password combination is incorrect\nDB: ${JSON.stringify(d1User)}`, {
-            fields,
-          });
-        }
-        return createUserSession(`${user.id}`, redirectTo);
-      }
-      case "register": {
-        const userExists = await db.user.findUnique({ where: { username } });
-        if (userExists) {
-          throw new FormError(`User with username ${username} already exists`, {
-            fields,
-          });
-        }
-        const user = await register({ username, password });
-        if (!user) {
-          throw new FormError(
-            `Something went wrong trying to create a new user.`,
-            {
-              fields,
-            }
-          );
-        }
-        return createUserSession(`${user.id}`, redirectTo);
-      }
-      default: {
-        throw new FormError(`Login type invalid`, { fields });
-      }
-    }
-  });
+  const [loggingIn, { Form }] = createServerAction$(loginFormServerAction);
 
   return (
     <main>

@@ -16,7 +16,7 @@ CREATE INDEX idx_users_user_name ON users (user_name);
 CREATE TABLE sessions (
     user_id         INTEGER NOT NULL,
     session_id      TEXT UNIQUE NOT NULL,
-    created_at      TIMESTAMP NOT NULL,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
