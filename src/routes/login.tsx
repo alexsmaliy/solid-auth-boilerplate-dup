@@ -78,7 +78,7 @@ async function handleRegister(db: D1Database, username: string, password: string
   if (userExists) throw new FormError("Username already taken!");
 
   // HASH PASSWORD AND CREATE NEW USER
-  const salt = bcrypt.genSaltSync(10);
+  const salt = bcrypt.genSaltSync(12);
   const hash = bcrypt.hashSync(password, salt);
   const dbResponse2 = await createUser(db, username, hash);
   if (dbResponse2 instanceof Error) throw new FormError(dbResponse2.message);
