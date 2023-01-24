@@ -3,7 +3,7 @@ import { D1Database } from "@cloudflare/workers-types";
 const SQL_TEMPLATE_STRINGS = {
     CHECK_USER_EXISTS:
         `SELECT
-            COUNT(*) > 0 AS exists
+            COUNT(*) > 0 AS present
         FROM
             users
         WHERE
@@ -64,10 +64,10 @@ function toSession({user_id, session_id, created_at}: SessionDbRow): Session {
 
 export async function checkUserExists(db: D1Database, username: string) {
     const stmt = db.prepare(SQL_TEMPLATE_STRINGS.CHECK_USER_EXISTS).bind(username);
-    return stmt.all<{exists: number}>().then(res => {
-        if (res.results !== undefined && res.results[0].exists === 1)
+    return stmt.all<{present: number}>().then(res => {
+        if (res.results !== undefined && res.results[0].present === 1)
             return true;
-        else if (res.results !== undefined && res.results[0].exists === 0)
+        else if (res.results !== undefined && res.results[0].present === 0)
             return false;
         return Error(`Some other problem: ${JSON.stringify(res)}`);
     }).catch(err => Error(err));
