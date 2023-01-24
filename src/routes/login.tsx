@@ -4,7 +4,7 @@ import { useParams, useRouteData } from "solid-start";
 import { FormError } from "solid-start/data";
 import { createServerAction$, createServerData$, redirect, ServerFunctionEvent } from "solid-start/server";
 import { COOKIE_NAME, parseCookie, serializeCookie } from "~/auth/cookies";
-import { checkUserExists, createUser, getUserBySessionId, getUserByUsername, setOrUpdateUserSession, User } from "~/d1/operations";
+import { checkUserExists, createUser, D1_DB_NAME, getUserBySessionId, getUserByUsername, setOrUpdateUserSession, User } from "~/d1/operations";
 
 enum LoginType {
   LOGIN = "login",
@@ -12,7 +12,7 @@ enum LoginType {
 }
 
 async function loginFormServerData(_unused: unknown, {env, request}: ServerFunctionEvent) {
-  const d1: D1Database = (env as any).TESTDB;
+  const d1: D1Database = (env as any)[D1_DB_NAME];
 
   const cookieString = request.headers.get("Cookie") || "";
   const parsedCookies = parseCookie(cookieString);
@@ -38,7 +38,7 @@ async function loginFormServerAction(form: FormData, { env }: ServerFunctionEven
   const password = form.get("password") as string;
   const redirectTo = (form.get("redirectTo") || "/") as string;
 
-  const d1: D1Database = (env as any).TESTDB;
+  const d1: D1Database = (env as any)[D1_DB_NAME];
 
   if (loginType === LoginType.LOGIN)
     return handleLogin(d1, username, password, redirectTo);

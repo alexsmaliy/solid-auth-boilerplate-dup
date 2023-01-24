@@ -2,10 +2,10 @@ import { D1Database } from "@cloudflare/workers-types";
 import { FormError, parseCookie, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$, redirect, ServerFunctionEvent } from "solid-start/server";
 import { COOKIE_NAME, serializeCookie } from "~/auth/cookies";
-import { deleteSession, getUserBySessionId, User } from "~/d1/operations";
+import { D1_DB_NAME, deleteSession, getUserBySessionId, User } from "~/d1/operations";
 
 async function indexRouteData(_unused: unknown, {env, request}: ServerFunctionEvent) {
-  const d1: D1Database = (env as any).TESTDB;
+  const d1: D1Database = (env as any)[D1_DB_NAME];
 
   const cookieString = request.headers.get("Cookie") || "";
   const parsedCookies = parseCookie(cookieString);
@@ -26,7 +26,7 @@ async function indexRouteData(_unused: unknown, {env, request}: ServerFunctionEv
 }
 
 async function logoutFormServerAction(_unused: FormData, { env, request }: ServerFunctionEvent) {
-  const d1: D1Database = (env as any).TESTDB;
+  const d1: D1Database = (env as any)[D1_DB_NAME];
 
   const cookieString = request.headers.get("Cookie") || "";
   const parsedCookies = parseCookie(cookieString);

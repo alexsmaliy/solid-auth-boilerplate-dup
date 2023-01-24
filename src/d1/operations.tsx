@@ -1,6 +1,8 @@
 import { D1Database } from "@cloudflare/workers-types";
 import { COOKIE_MAX_AGE_SECONDS } from "~/auth/cookies";
 
+export const D1_DB_NAME = "TESTDB";
+
 const SQL_TEMPLATE_STRINGS = {
     CHECK_USER_EXISTS:
         `SELECT
